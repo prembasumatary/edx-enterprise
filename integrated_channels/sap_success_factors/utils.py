@@ -202,10 +202,7 @@ class SapCourseExporter(BaseCourseExporter):  # pylint: disable=abstract-method
         for course_key, summary in previous_audit_summary.items():
             # Add a course payload to self.courses so that courses no longer in the catalog are marked inactive.
             if summary['status'] == self.STATUS_ACTIVE and summary['in_catalog']:
-                new_courses.append({
-                    'courseID': course_key,
-                    'status': self.STATUS_INACTIVE,
-                })
+                new_courses.append(get_course_metadata_for_inactivation(course_key, self.enterprise_customer))
 
                 new_audit_summary[course_key] = {
                     'in_catalog': False,
@@ -322,3 +319,33 @@ def transform_language_code(code):
     language_family = SUCCESSFACTORS_OCN_LANGUAGE_CODES[language_code]
     language_name = language_family.get(country_code, language_family['_'])
     return language_name
+
+
+def get_course_metadata_for_inactivation(course_id, enterprise_customer):
+    """
+    Provide the minimal course metadata structure for updating a course to be inactive.
+    """
+    provider_id = apps.get_model(
+        'sap_success_factors',
+        'SAPSuccessFactorsGlobalConfiguration'
+    ).current().provider_id
+    return {
+        'courseID': course_id,
+        'providerID': provider_id,
+        'status': SapCourseExporter.STATUS_INACTIVE,
+        'title': [
+            {
+                'locale': transform_language_code(None),
+                'value': course_id
+            },
+        ],
+        'content': [
+            {
+                'providerID': provider_id,
+                'launchURL': get_course_track_selection_url(enterprise_customer, course_id),
+                'contentTitle': 'Course Description',
+                'launchType': 3,
+                'contentID': course_id,
+            }
+        ],
+    }
