@@ -998,7 +998,7 @@ def get_transformed_course_metadata(course_id, status):
             {
                 'providerID': 'EDX',
                 'launchURL': '',
-                'contentTitle': 'Course Description',
+                'contentTitle': '',
                 'contentID': course_id,
                 'launchType': 3,
                 'mobileEnabled': 'false',

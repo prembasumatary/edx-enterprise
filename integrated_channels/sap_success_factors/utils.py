@@ -232,7 +232,9 @@ class SapCourseExporter(BaseCourseExporter):  # pylint: disable=abstract-method
         'description': lambda x: [
             {
                 'locale': transform_language_code(safe_extract_key(x, 'content_language', None)),
-                'value': safe_extract_key(x, 'full_description'),
+                'value': safe_extract_key(x, 'full_description')
+                         or safe_extract_key(x, 'short_description')
+                         or safe_extract_key(x, 'title'),
             },
         ],
         'thumbnailURI': lambda x: (safe_extract_key(x['image'], 'src') if 'image' in x else ''),
@@ -243,7 +245,7 @@ class SapCourseExporter(BaseCourseExporter):  # pylint: disable=abstract-method
                     'SAPSuccessFactorsGlobalConfiguration'
                 ).current().provider_id,
                 'launchURL': get_course_track_selection_url(x['enterprise_customer'], x['key']),
-                'contentTitle': 'Course Description',
+                'contentTitle': safe_extract_key(x, 'title'),
                 'contentID': x['key'],
                 'launchType': 3,
                 'mobileEnabled': safe_extract_key(x, 'mobile_available', 'false'),
